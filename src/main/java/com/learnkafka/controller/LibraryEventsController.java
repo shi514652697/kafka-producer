@@ -22,6 +22,7 @@ public class LibraryEventsController {
 	{
 		libraryEventProducer.sendLibraryEvent(libraryEvent); // asyc call
 		//libraryEventProducer.sendLibraryEventSynchronous(libraryEvent); //sync call
+		//libraryEventProducer.sendLibraryEvent_Approach2(libraryEvent);  // aproach 2
 		return ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent);
 		
 	}

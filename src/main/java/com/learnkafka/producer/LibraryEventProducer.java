@@ -1,7 +1,12 @@
 package com.learnkafka.producer;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.internals.RecordHeader;
+import org.assertj.core.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -24,6 +29,8 @@ public class LibraryEventProducer {
 	
 	@Autowired
 	ObjectMapper objectMapper;
+	
+	String topic = "library-events";
 	
 	public void sendLibraryEvent(LibraryEvent libraryEvent) throws JsonProcessingException
 	{
@@ -64,7 +71,8 @@ public class LibraryEventProducer {
 	{
 		final Integer key = libraryEvent.getLibraryEventId();
 		final String value = objectMapper.writeValueAsString(libraryEvent);
-		ListenableFuture<SendResult<Integer, String>> listenableFuture= kafkaTemplate.send("library-events", key, value)
+		ProducerRecord<Integer, String> producerRecord = buildProducerRecord(key,value,topic);
+		ListenableFuture<SendResult<Integer, String>> listenableFuture= kafkaTemplate.send(producerRecord);
 		listenableFuture.addCallback(new ListenableFutureCallback<SendResult<Integer, String>>() {
 
 			public void onSuccess(SendResult<Integer, String> result) {
@@ -80,6 +88,12 @@ public class LibraryEventProducer {
 	
 	
 	
+		private ProducerRecord<Integer, String> buildProducerRecord(Integer key, String value, String topic) {
+		//List<Header> recordHeader = List.
+				//(new RecordHeader("event-source", "scanner".getBytes()));
+		return new ProducerRecord<Integer, String>(topic, null, key, value, null);
+	}
+
 		private void handleFailure(Integer key, String value, Throwable ex) {
 			log.error("Error sending the message and the exception is {}", ex.getMessage());
 		
