@@ -2,11 +2,12 @@ package com.learnkafka.producer;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
-import org.assertj.core.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -56,10 +57,12 @@ public class LibraryEventProducer {
 		final String value = objectMapper.writeValueAsString(libraryEvent);
 		SendResult<Integer, String> result = null;
 		try {
-			 result = kafkaTemplate.sendDefault(key, value).get();
+			 result = kafkaTemplate.sendDefault(key, value).get(2, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (ExecutionException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
 			e.printStackTrace();
 		}
 		
@@ -89,9 +92,9 @@ public class LibraryEventProducer {
 	
 	
 		private ProducerRecord<Integer, String> buildProducerRecord(Integer key, String value, String topic) {
-		//List<Header> recordHeader = List.
-				//(new RecordHeader("event-source", "scanner".getBytes()));
-		return new ProducerRecord<Integer, String>(topic, null, key, value, null);
+		List<Header> recordHeader = List.of
+				(new RecordHeader("event-source", "scanner".getBytes()));
+		return new ProducerRecord<Integer, String>(topic, null, key, value, recordHeader);
 	}
 
 		private void handleFailure(Integer key, String value, Throwable ex) {
